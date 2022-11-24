@@ -9,7 +9,7 @@ import java.util.Properties;
 public class ConfigFileReader {
 
     private static Properties properties;
-    private final String propertyFilePath= "C:\\Users\\09371169\\IdeaProjects\\Insider_CasePractice\\configs\\Configuration.properties";
+    private final String propertyFilePath= "..\\IdeaProjects\\Insider_CasePractice\\configs\\Configuration.properties";
 
     public ConfigFileReader(){
         BufferedReader reader;
@@ -32,6 +32,12 @@ public class ConfigFileReader {
         String driverPath = properties.getProperty("driverPath");
         if(driverPath!= null) return driverPath;
         else throw new RuntimeException("driverPath not specified in the Configuration.properties file.");
+    }
+
+    public static String getDriverTargetPath(){
+        String driverTPath = properties.getProperty("targetURL");
+        if(driverTPath!= null) return driverTPath;
+        else throw new RuntimeException("driverTPath not specified in the Configuration.properties file.");
     }
 
     public long getImplicitlyWait() {

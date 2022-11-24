@@ -1,60 +1,80 @@
-import Model.Elements;
-import com.google.auto.common.AnnotationMirrors;
+package Steps;
+
+import org.junit.Assert;
+import org.openqa.selenium.By;
+import pageObjectModel.Elements;
 import dataProvider.ConfigFileReader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
-import pageObjects.HomePage;
-
-import java.util.concurrent.TimeUnit;
+import utilities.Log4j;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestElements {
-    public static WebDriver driver;
-    ConfigFileReader configFileReader;
-    HomePage homePage;
-    public static Elements elementPage; //Mode
-    // limizin bulunduğu paket dosyası
-    String baseURL = configFileReader.getApplicationUrl();
-    String driverPath= configFileReader.getDriverPath();
-
+    public WebDriver driver;
+    ConfigFileReader configFileReader = new ConfigFileReader();
+    String baseURL = ConfigFileReader.getApplicationUrl();
+    String targetURL = ConfigFileReader.getDriverTargetPath();
+    String driverPath= ConfigFileReader.getDriverPath();
 
     @Before
-    public void setUp() throws Exception {
-        System.setProperty("webdriver.chrome.driver", configFileReader.getDriverPath());
-            driver = new ChromeDriver();
+    public void setUp() {
+        System.setProperty("webdriver.chrome.driver",driverPath);
+        driver = new ChromeDriver();
         driver.manage().window().maximize();
-            String baseUrl = ConfigFileReader.getApplicationUrl();
-            driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);    configFileReader= new ConfigFileReader();
-
-        homePage.navigateTo_HomePage();	}
+        driver.manage().timeouts().implicitlyWait(configFileReader.getImplicitlyWait(), SECONDS);
+        driver.get(baseURL);
+        String urlEquals = "https://useinsider.com/";
+        assertEquals(baseURL, urlEquals);}
 
     @Test
-    public void testMorePage() throws Exception {
+    public void testMorePage() throws InterruptedException {
+        Log4j.startLog("Test is Starting...");
+        driver.manage().timeouts().pageLoadTimeout(200, SECONDS);
+        Log4j.startLog("Page is opened, "+baseURL);
+        Elements elementPage = new Elements(driver);
+        Log4j.info("Closing Cookies pop-up menu: 'Apply Necessary' option is selected.");
+        driver.findElement(By.xpath("//a[contains(text(), 'Only Necessary')]")).click();
 
-            //System.setProperty("webdriver.chrome.driver", driverPath);
-            driver = new ChromeDriver();
-            driver.manage().window().maximize();
-            driver.manage().timeouts().implicitlyWait(configFileReader.getImplicitlyWait(), TimeUnit.SECONDS);
-            driver.get(baseURL);
-//Sayfaların beklenmesi için süre aşağıdaki gibi tanınır
-            driver.manage().timeouts().pageLoadTimeout(200, SECONDS);
-        elementPage.clickMore().click();
+        elementPage.clickMore().click(); Log4j.info("Selected “More” menu in navigation bar.");
+        elementPage.selectCareers().click();  Log4j.info("Selected “Careers”.");
+
+        String isVisibleLocation = elementPage.getLocationError().getText();
+        Assert.assertTrue(isVisibleLocation.contains("Location"));
+        Log4j.info("Location block opened.");
+
+        String isVisibleLife = elementPage.getLifeError().getText();
+        Assert.assertTrue(isVisibleLife.contains("Life"));
+        Log4j.info("Life block opened.");
+
+        String isVisibleTeams = elementPage.getTeamsError().getText();
+        Assert.assertTrue(isVisibleTeams.contains("calling"));
+        Log4j.info("Teams block opened.");
+
+        elementPage.clickSeeAllTeams().click(); Log4j.info("Clicked 'See All Teams'.");
+        elementPage.selectQA().click(); Log4j.info("Clicked 'Quality Assurance'.");
+        elementPage.selectAllQAJobs().click(); Log4j.info("Clicked 'See all QA jobs'.");
+        elementPage.selectLocation().isSelected(); Log4j.info("Selected Location: Istanbul, Turkey.");
+        elementPage.selectPosition().isSelected(); Log4j.info("Selected Department: Quality Assurance.");
+
+        Assert.assertTrue(elementPage.checkJobList().isDisplayed());Log4j.info("Jobs are listed.");
+
+        elementPage.applyButton().click(); Log4j.info(" Clicked “Apply Now” button.");
+
+        driver.get(targetURL);
+        driver.manage().timeouts().implicitlyWait(configFileReader.getImplicitlyWait(), SECONDS);
+        Log4j.info("Opened the target URL.");
+
         }
-
-
 
         @After
-    public void tearDown() throws Exception {
+    public void tearDown(){
+        Log4j.endLog("Test is Ending...");
         driver.quit();
-            AnnotationMirrors verificationErrors = null;
-            String verificationErrorString = verificationErrors.toString();
-        if (!"".equals(verificationErrorString)) {
-            fail(verificationErrorString);
-        }
+
     }
 }
